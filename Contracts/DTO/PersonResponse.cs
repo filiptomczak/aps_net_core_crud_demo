@@ -13,6 +13,7 @@ namespace Contracts.DTO
         public string Name { get; set; }
         public Guid? CountryId{ get; set; }
         public string Country{ get; set; }
+        public string Email{ get; set; }
 
         public override bool Equals(object obj)
         {
@@ -22,6 +23,11 @@ namespace Contracts.DTO
 
             return this.Name == comparePerson.Name &&
                 this.PersonId == comparePerson.PersonId;
+        }
+
+        public override string ToString()
+        {
+            return $"Person: {this.Name}, {this.PersonId}";
         }
     }
     public static class PersonExtension
@@ -33,6 +39,7 @@ namespace Contracts.DTO
                 PersonId = person.PersonId,
                 Name = person.Name,
                 CountryId = person.CountryId,
+                Email = person.Email,
             };
         }
     }

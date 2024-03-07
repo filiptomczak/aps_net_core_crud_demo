@@ -10,7 +10,7 @@ namespace Contracts
     public class CountryRequest
     {
         public string? CountryName { get; set; }
-        public Guid? CountryId { get; set; }
+        //public Guid? CountryId { get; set; }
         public Country ToCountry()
         {
             return new Country() { CountryName = CountryName };

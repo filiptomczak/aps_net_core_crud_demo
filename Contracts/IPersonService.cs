@@ -11,5 +11,7 @@ namespace Contracts
     {
         public PersonResponse AddPerson(PersonRequest? person);
         public PersonResponse GetPersonByPersonId(Guid? id);
+        public IEnumerable<PersonResponse> GetAll();
+        public IEnumerable<PersonResponse> GetFiltered(string searchBy, string? searchString);
     }
 }

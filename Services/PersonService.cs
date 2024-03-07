@@ -27,11 +27,11 @@ namespace Services
                 throw new ArgumentNullException(nameof(request));
             }
 
-            ValidationHelper.ModelValidation(request);
-            /*if(string.IsNullOrEmpty(request.Email))
+            //ValidationHelper.ModelValidation(request);
+            if(string.IsNullOrEmpty(request.Email))
             {
                 throw new ArgumentException(nameof(request.Email));
-            }*/
+            }
             var emailAlreadyExist = _persons.SingleOrDefault(p => p.Email == request.Email);
             if (emailAlreadyExist != null)
             {
@@ -41,6 +41,42 @@ namespace Services
             person.PersonId = Guid.NewGuid();
             _persons.Add(person);
             return ConvertToPersonResponse(person);
+        }
+
+        public IEnumerable<PersonResponse> GetAll()
+        {
+            return _persons.Select(p => ConvertToPersonResponse(p));
+        }
+
+        public IEnumerable<PersonResponse> GetFiltered(string searchBy, string searchString)
+        {
+            var filteredPersons = new List<PersonResponse>();
+            var persons = GetAll().ToList();
+
+            if (string.IsNullOrEmpty(searchBy))
+                return persons;
+
+
+            switch (searchBy)
+            {
+                case nameof(Person.Name):
+                    filteredPersons = persons.Where(p =>
+                    string.IsNullOrEmpty(searchString) ?
+                    true :
+                    p.Name.Contains(searchString)).ToList();
+                    break;
+
+                case nameof(Person.Email):
+                    filteredPersons = persons.Where(p =>
+                    string.IsNullOrEmpty(searchString) ?
+                    true :
+                    p.Email.Contains(searchString)).ToList();
+                    break;
+
+                default:
+                    break;
+            }
+            return filteredPersons;
         }
 
         public PersonResponse GetPersonByPersonId(Guid? id)
@@ -64,7 +100,7 @@ namespace Services
         private PersonResponse ConvertToPersonResponse(Person person)
         {
             var response = person.ToPersonResponse();
-            response.Country = _countryService.GetCountryById(person.CountryId).CountryName;
+            response.Country = _countryService.GetCountryById(person.CountryId)?.CountryName;
             return response;
         }
     }

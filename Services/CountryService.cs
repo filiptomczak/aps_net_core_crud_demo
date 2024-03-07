@@ -30,7 +30,6 @@ namespace Services
                 throw new ArgumentException("Country already exists");
             }
             var country = request.ToCountry();
-
             country.CountryId = Guid.NewGuid();
             _countries.Add(country);
 
@@ -46,7 +45,7 @@ namespace Services
         {
             if (guid == null)
                 return null;
-            return _countries.SingleOrDefault(c => c.CountryId == guid).ToCountryResponse();
+            return _countries.SingleOrDefault(c => c.CountryId == guid)?.ToCountryResponse();
         }
     }
 }

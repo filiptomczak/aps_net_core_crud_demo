@@ -1,5 +1,6 @@
 ﻿using Contracts;
 using Contracts.DTO;
+using Entities;
 using Services;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Tests
 {
@@ -14,10 +16,12 @@ namespace Tests
     {
         private readonly IPersonService _personService;
         private readonly ICountryService _countryService;
-        public PersonService_Tests()
+        private readonly ITestOutputHelper _testOutputHelper;
+        public PersonService_Tests(ITestOutputHelper testOutputHelper)
         {
             _personService = new PersonService();
             _countryService = new CountryService();
+            _testOutputHelper = testOutputHelper;
         }
         #region AddPerson
         [Fact]
@@ -67,7 +71,7 @@ namespace Tests
         {
             var id = Guid.Empty;
 
-            Assert.Throws<ArgumentNullException>(() =>
+            Assert.Throws<ArgumentException>(() =>
             {
                 _personService.GetPersonByPersonId(id);
             });
@@ -82,6 +86,97 @@ namespace Tests
             var expectedResponse = _personService.GetPersonByPersonId(response.PersonId);
             Assert.True(response.PersonId != Guid.Empty);
             Assert.Equal(expectedResponse, response);
+        }
+        #endregion
+        #region GetAll
+        [Fact]
+        public void GetAll_ReturnEmpty()
+        {
+            var all = _personService.GetAll();
+            Assert.Empty(all);
+        }
+        [Fact]
+        public void GetAll_ReturnCount()
+        {
+            var request1 = new PersonRequest { Name = "p1", Email = "mail1@mail.com" };
+            var request2 = new PersonRequest { Name = "p2", Email = "mail2@mail.com" };
+            _personService.AddPerson(request1);
+            _personService.AddPerson(request2);
+            var expectedCount = 2;
+            var countResult = _personService.GetAll().Count();
+            Assert.True(expectedCount == countResult);
+        }
+        [Fact]
+        public void GetAll_ContainsObj()
+        {
+            var request1 = new PersonRequest { Name = "p1", Email = "mail1@mail.com" };
+            var request2 = new PersonRequest { Name = "p2", Email = "mail2@mail.com" };
+            
+            var addedPersons = new List<PersonResponse>();
+            addedPersons.Add(_personService.AddPerson(request1));
+            addedPersons.Add(_personService.AddPerson(request2));
+
+            foreach(var person in addedPersons)
+            {
+                _testOutputHelper.WriteLine(person.ToString());
+            }
+            var result = _personService.GetAll();
+            foreach (var res in result)
+            {
+                Assert.Contains(res, addedPersons);
+                _testOutputHelper.WriteLine(res.ToString());
+            }
+        }
+        #endregion
+        #region GetFiltered
+        [Fact]
+        public void GetFiltered_EmptySearch()
+        {
+            var addedPersons = AddPerson();
+
+            foreach (var person in addedPersons)
+            {
+                _testOutputHelper.WriteLine(person.ToString());
+            }
+            var result = _personService.GetFiltered(searchBy:(nameof(Person)),searchString:"");
+            foreach (var res in result)
+            {
+                Assert.Contains(res, addedPersons);
+                _testOutputHelper.WriteLine(res.ToString());
+            }
+        }
+        [Fact]
+        public void GetFiltered_SearchByPersonName()
+        {
+            var addedPersons = AddPerson();
+            var searchString = "ab";
+            var result = _personService.GetFiltered((nameof(Person)),searchString);
+            foreach (var res in result)
+            {
+                if (res.Name != null)
+                {
+                    if (res.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                    {
+                        Assert.Contains(res, addedPersons);
+                        _testOutputHelper.WriteLine(res.ToString());
+                    }
+                }
+            }
+        }
+        private IEnumerable<PersonResponse> AddPerson()
+        {
+            var request1 = new PersonRequest { Name = "pablo", Email = "mail1@mail.com" };
+            var request2 = new PersonRequest { Name = "aimar", Email = "mail2@mail.com" };
+
+            var addedPersons = new List<PersonResponse>();
+            addedPersons.Add(_personService.AddPerson(request1));
+            addedPersons.Add(_personService.AddPerson(request2));
+
+            foreach (var person in addedPersons)
+            {
+                _testOutputHelper.WriteLine(person.ToString());
+            }
+            return addedPersons;
         }
         #endregion
     }
