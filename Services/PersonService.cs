@@ -43,6 +43,24 @@ namespace Services
             return ConvertToPersonResponse(person);
         }
 
+        public bool DeletePerson(Guid? id)
+        {
+            if (id == Guid.Empty)
+            {
+                throw new ArgumentNullException();
+            }
+
+            var personToDelete = _persons.SingleOrDefault(p => p.PersonId == id);
+
+            if(personToDelete == null)
+            {
+                return false;
+            }
+
+            _persons.Remove(personToDelete);
+            return true;
+        }
+
         public IEnumerable<PersonResponse> GetAll()
         {
             return _persons.Select(p => ConvertToPersonResponse(p));
@@ -95,6 +113,58 @@ namespace Services
                 throw new NullReferenceException();
             }
             return ConvertToPersonResponse(person);
+        }
+
+        public IEnumerable<PersonResponse> GetSorted(IEnumerable<PersonResponse> allPersons, string sortBy, SortOrder sortOrder)
+        {
+            var sortedPersons = new List<PersonResponse>();
+            var persons = GetAll().ToList();
+
+            if (string.IsNullOrEmpty(sortBy))
+                return persons;
+
+
+            switch (sortBy)
+            {
+                case nameof(Person.Name):
+                    sortedPersons = sortOrder == SortOrder.ASC ?
+                        persons.OrderBy(p => p.Name).ToList() :
+                        persons.OrderByDescending(p => p.Name).ToList();
+                    break;
+
+                case nameof(Person.Email):
+                    sortedPersons = sortOrder == SortOrder.ASC ?
+                        persons.OrderBy(p => p.Email).ToList() :
+                        persons.OrderByDescending(p => p.Email).ToList();
+                    break;
+
+                default:
+                    break;
+            }
+            return sortedPersons;
+        }
+
+        public PersonResponse UpdatePerson(PersonUpdate? personUpdate)
+        {
+            if(personUpdate == null)
+            {
+                throw new ArgumentNullException();
+            }
+            if(personUpdate.Name==null || personUpdate.Email == null)
+            {
+                throw new ArgumentException();
+            }
+            ValidationHelper.ModelValidation(personUpdate);
+
+            var matchPerson = _persons.SingleOrDefault(p => p.PersonId == personUpdate.Id);
+            if(matchPerson == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            matchPerson = personUpdate.ToPerson();
+            
+            return matchPerson.ToPersonResponse();
         }
 
         private PersonResponse ConvertToPersonResponse(Person person)

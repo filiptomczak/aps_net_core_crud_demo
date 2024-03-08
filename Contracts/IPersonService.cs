@@ -13,5 +13,8 @@ namespace Contracts
         public PersonResponse GetPersonByPersonId(Guid? id);
         public IEnumerable<PersonResponse> GetAll();
         public IEnumerable<PersonResponse> GetFiltered(string searchBy, string? searchString);
+        public IEnumerable<PersonResponse> GetSorted(IEnumerable<PersonResponse> allPersons, string sortBy, SortOrder sortOrder);
+        public PersonResponse UpdatePerson(PersonUpdate? personUpdate);
+        public bool DeletePerson(Guid? id);
     }
 }

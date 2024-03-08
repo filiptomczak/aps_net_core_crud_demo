@@ -25,6 +25,17 @@ namespace Contracts.DTO
                 this.PersonId == comparePerson.PersonId;
         }
 
+        public PersonUpdate ToPersonUpdate()
+        {
+            return new PersonUpdate()
+            {
+                Id = PersonId,
+                Name = Name,
+                CountryId = CountryId,
+                Email = Email,
+            };
+        }
+
         public override string ToString()
         {
             return $"Person: {this.Name}, {this.PersonId}";
